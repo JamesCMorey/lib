@@ -11,7 +11,7 @@ int main() {
 
 	T = ll_add(T, 1, &t1);
 	printf("%p", T->value);
-	//print_node(T);
+	print_node(T);
 
 	return 0;
 }

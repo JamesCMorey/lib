@@ -9,7 +9,7 @@ TEST_DIR := test
 SRCS := $(wildcard $(SRC_DIR)/*.c)
 TEST_SRCS := $(wildcard $(TEST_DIR)/*.c)
 LOCAL_HEADER_FILES := $(wildcard $(INCLUDE_DIR)/*.h)
-LOCAL_LIB_FILES := $(patsubst $(SRC_DIR)/%.c, $(LIB_DIR)/%.a, $(SRCS))
+LOCAL_LIB_FILES := $(patsubst $(SRC_DIR)/%.c, $(LIB_DIR)/lib%.a, $(SRCS))
 
 # System directories
 HEADER_INSTALL_DIR := /usr/local/include
@@ -39,7 +39,7 @@ install_libs: $(LOCAL_LIB_FILES)
 	sudo cp -f $(LOCAL_LIB_FILES) $(LIB_INSTALL_DIR)
 
 # Compile library (.a) file from object files
-$(LIB_DIR)/%.a: $(BUILD_DIR)/%.o
+$(LIB_DIR)/lib%.a: $(BUILD_DIR)/%.o
 	@mkdir -p $(LIB_DIR)
 	ar -cvq $@ $<
 

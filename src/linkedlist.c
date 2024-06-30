@@ -3,7 +3,7 @@
 #include <short_types.h>
 
 
-void *ll_get(struct ll_node *head, u64 key) {
+linkedlist_t *ll_get(struct ll_node *head, void *key) {
 	struct ll_node *tmp = head;
 
 	while(tmp != NULL && tmp->key != key) {
@@ -13,17 +13,21 @@ void *ll_get(struct ll_node *head, u64 key) {
 	return tmp;
 }
 
-void ll_del(struct ll_node *head, u64 key) {
+u8 ll_del(struct ll_node *head, void *key) {
 	struct ll_node *tmp = (struct ll_node *)ll_get(head, key);
+
+	if (tmp == NULL) {
+		return -1;
+	}
 
 	tmp->prev->next = tmp->next;
 	tmp->next->prev = tmp->prev;
 	free(tmp);
 
-	return;
+	return 0;
 }
 
-void *ll_add(struct ll_node *head, u64 key, void *value) {
+linkedlist_t *ll_add(struct ll_node *head, void *key, void *value) {
 	struct ll_node *tmp;
 	tmp = malloc(sizeof(struct ll_node));
 
