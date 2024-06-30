@@ -24,3 +24,5 @@ u8 ll_del(struct ll_node *head, void *key);
  * value in the new head.
  * */
 linkedlist_t *ll_add(struct ll_node *head, void *key, void *value);
+
+void ll_free(linkedlist_t *head);

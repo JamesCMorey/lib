@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <linkedlist.h>
 #include <short_types.h>
@@ -44,4 +45,14 @@ linkedlist_t *ll_add(struct ll_node *head, void *key, void *value) {
 	head->prev = tmp;
 
 	return tmp;
+}
+
+void ll_free(linkedlist_t *head) {
+	linkedlist_t *next;
+
+	while(head != NULL) {
+		next = head->next;
+		free(head);
+		head = next;
+	}
 }

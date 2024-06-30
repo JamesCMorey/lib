@@ -2,13 +2,14 @@
 SRC_DIR := src
 BUILD_DIR := build
 INCLUDE_DIR := include
+HEADER_DIR := include
 LIB_DIR := lib
 TEST_DIR := test
 
 # Lists of local files
 SRCS := $(wildcard $(SRC_DIR)/*.c)
 TEST_SRCS := $(wildcard $(TEST_DIR)/*.c)
-LOCAL_HEADER_FILES := $(wildcard $(INCLUDE_DIR)/*.h)
+LOCAL_HEADER_FILES := $(wildcard $(HEADER_DIR)/*.h)
 LOCAL_LIB_FILES := $(patsubst $(SRC_DIR)/%.c, $(LIB_DIR)/lib%.a, $(SRCS))
 
 # System directories
@@ -52,7 +53,10 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 # Run tests on library files
 test: all $(TEST_OBJS)
 
-$(TEST_DIR)/%.c: 
+$(BUILD_DIR)/%.o: test/%.c
+	$(CC) $(CFLAGS) $< -o $(patsubst $(BUILD_DIR)/%.o, %.out, $@)  -I$(INCLUDE_DIR) -lhashtable -llinkedlist -lpretty_print
+	@$(patsubst $(BUILD_DIR)/%.o, ./%.out, $@)
+	rm $(patsubst $(BUILD_DIR)/%.o, ./%.out, $@)
 
 # uninstall everything moved into system directories
 uninstall:

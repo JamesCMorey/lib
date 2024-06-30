@@ -5,6 +5,7 @@
 
 struct ht_node {
 	u64 key;
+	u8 live;
 	linkedlist_t *ll;
 };
 
@@ -14,6 +15,7 @@ typedef struct hashtable_t {
 } hashtable_t;
 
 hashtable_t *ht_init(u32 size);
+void ht_free(hashtable_t *H);
 u8 ht_add(hashtable_t *H, void *key, u32 keysize, void *value);
 u64 fnv_1a(void *data, u32 size);
 void *ht_get(hashtable_t *H, void *key, u32 keysize);

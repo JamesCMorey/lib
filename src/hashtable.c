@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <linkedlist.h>
 #include <short_types.h>
@@ -27,8 +28,11 @@ u8 ht_add(hashtable_t *H, void *key, u32 keysize, void *value) {
 
 hashtable_t *ht_init(u32 size) {
 	hashtable_t *H = malloc(sizeof(hashtable_t));
-	H->buckets = malloc(size * sizeof(struct ht_node));
 	H->size = size;
+
+	/* Zeroed to meet empty linkedlist allocation requirement of head being NULL */
+	/* TODO: Optimize this by making it so the array doesn't have to be zeroed */
+	H->buckets = calloc(size, sizeof(struct ht_node));
 
 	if (!H || !H->buckets) {
 		return NULL;
@@ -38,9 +42,14 @@ hashtable_t *ht_init(u32 size) {
 }
 
 void ht_free(hashtable_t *H) {
+	for(u32 i = 0; i < H->size; i++) {
+		ll_free(H->buckets[i].ll);
+	}
+
 	free(H->buckets);
 	free(H);
 }
+
 
 /* fnv-1a hashing algorithm */
 u64 fnv_1a(void *data, u32 size) {
