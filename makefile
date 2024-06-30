@@ -32,16 +32,16 @@ all: install_headers install_libs
 
 # Install header files to system directory
 install_headers:
-	sudo cp -f $(LOCAL_HEADER_FILES) $(HEADER_INSTALL_DIR)
+	sudo cp $(LOCAL_HEADER_FILES) $(HEADER_INSTALL_DIR)
 
 # Install library files to system directory
 install_libs: $(LOCAL_LIB_FILES)
-	sudo cp -f $(LOCAL_LIB_FILES) $(LIB_INSTALL_DIR)
+	sudo cp $^ $(LIB_INSTALL_DIR)
 
 # Compile library (.a) file from object files
 $(LIB_DIR)/lib%.a: $(BUILD_DIR)/%.o
 	@mkdir -p $(LIB_DIR)
-	ar -cvq $@ $<
+	ar -cr $@ $<
 
 # Compile .c files to .o files
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
