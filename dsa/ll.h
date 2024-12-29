@@ -1,0 +1,199 @@
+#ifndef LL_H
+#define LL_H
+
+#include <stddef.h>
+#include <stdbool.h>
+
+/******************************************************************************/
+/****************************** CLIENT INTERFACE ******************************/
+
+/* Return: rv > 0 if k1 > k2, rv < 0 if k1 < k2, and rv == 0 if k1 == k2 */
+typedef int key_cmp_fn(void *e1, void *e2);
+typedef void *entry_key_fn(void *entry);
+typedef void entry_free_fn(void *entry);
+
+typedef void process_fn(void *entry, void *context);
+
+/******************************************************************************/
+/****************************** IMPLEMENTATION ********************************/
+
+typedef struct ll_header *ll_t;
+
+struct ll_node {
+    void *entry;
+    struct ll_node *next;
+    struct ll_node *prev;
+};
+
+struct ll_header {
+    /* Points to dummy nodes */
+    struct ll_node *head;
+    struct ll_node *tail;
+
+    size_t size;
+
+    key_cmp_fn *key_cmp;
+    entry_key_fn *entry_key;
+    entry_free_fn *entry_free;
+};
+
+/* ====== Validation ====== */
+bool is_ll(ll_t L);
+bool ll_valid_index(ll_t L, int index);
+
+/******************************************************************************/
+/***************************** LIBRARY INTERFACE  *****************************/
+
+//typedef struct ______ *ll_t;
+
+/* ====== Init and Teardown ====== */
+
+/* Initialize new linked list
+ *
+ * ensures: rv != NULL
+ * */
+ll_t ll_new();
+
+/* Free linked list alongside entries if free_entries_fn is defined
+ *
+ * requires: L != NULL
+ * */
+void ll_free(ll_t L);
+
+/* ====== Accessors ====== */
+
+/* Returns entry with key or NULL if it doesn't exist
+ *
+ * requires: L != NULL
+ * */
+void *ll_find(ll_t L, void *key);
+
+/* Returns entry at index
+ *
+ * requires: L != NULL && ((0 <= index && index < size(L))
+ *                          || (index < 0 && -index <= size(L)))
+ * */
+void *ll_get(ll_t L, int index);
+
+/* Returns size_t integer for amount of entries in list
+ *
+ * requires: L != NULL
+ * ensures: 0 <= rv
+ * */
+size_t ll_size(ll_t L);
+
+/* Returns int for empty or not
+ *
+ * requires: L != NULL
+ * ensures: (rv == 1 && ll_size(L) == 0)
+ *              || (rv == 0 && ll_size(L) > 0)
+ * */
+int ll_empty(ll_t L);
+
+/* Traverses L from head, calling p and passing each node and the context to p
+ *
+ * requires: L != NULL && p != NULL
+ * */
+void ll_traverse(ll_t L, process_fn *p, void *context);
+
+/* Traverses L from tail, calling p and passing each node and the context to p
+ *
+ * requires: L != NULL && p != NULL
+ * */
+void ll_traverse_rev(ll_t L, process_fn *p, void *context);
+
+/* ====== Mutators ====== */
+
+/* Insert entry at head
+ *
+ * requires: L != NULL && entry != NULL
+ * ensures: L != NULL && !ll_empty(L)
+ * */
+void ll_insert(ll_t L, void *entry);
+
+/* Insert entry at tail
+ *
+ * requires: L != NULL && entry != NULL
+ * ensures: L != NULL && !ll_empty(L)
+ * */
+int ll_insert_tail(ll_t L, void *entry);
+
+/* Insert entry at index
+ *
+ * Inserts in front of node at index passed, thereby occupying the index.
+ * Allows for negative indexing where -1 is the tail node.
+ *
+ * requires: L != NULL && entry!= NULL
+ *              && ((0 <= index && index < size(L))
+ *              || (index < 0 && abs(index) <= size(L)))
+ * ensures: L != NULL && !ll_empty(L)
+ * */
+int ll_insert_at(ll_t L,
+                 int index,
+                 void *entry);
+
+/* Searches from head and deletes first entry with key
+ *
+ * Inserts in front of node at index passed, thereby occupying the index.
+ * Allows for negative indexing where -1 is the tail node.
+ *
+ * requires: L != NULL && !ll_empty(L) && entry_key != NULL && key_cmp != NULL
+ * ensures: L != NULL
+ * */
+int ll_del(ll_t L, void *key);
+
+/* Searches from tail and deletes first entry with key
+ *
+ * requires: L != NULL && !ll_empty(L)
+ * ensures: L != NULL
+ * */
+int ll_del_rev(ll_t L, void *key);
+
+/* Delete entry at head
+ *
+ * requires: L != NULL && !ll_empty(L)
+ * ensures: L != NULL
+ * */
+int ll_del_head(ll_t L);
+
+/* Delete entry at tail
+ *
+ * requires: L != NULL && !ll_empty(L)
+ * ensures: L != NULL
+ * */
+int ll_del_tail(ll_t L);
+
+/* Delete entry at index
+ *
+ * Allows for negative indexing where -1 is the tail node.
+ *
+ * requires: L != NULL && !ll_empty(L)
+ *              && ((0 <= index && index < ll_size(L))
+ *              || (index < 0 && abs(index) <= ll_size(L)))
+ * ensures: L != NULL
+ * */
+int ll_del_at(ll_t L, int index);
+
+/* Find entry with key and replace it with new_entry, freeing the old entry if
+ * the free_old flag is set. Returns old entry if free_old is not set.
+ *
+ * requires: L != NULL && new_entry != NULL
+ *              && entry_key != NULL && key_cmp != NULL
+ * */
+void *ll_update(ll_t L,
+                void *key,
+                void *new_entry,
+                int free_old);
+
+/* Find entry at index and replace it with new_entry, freeing the old entry if
+ * the free_old flag is set. Returns old entry if free_old is not set.
+ *
+ * requires: L != NULL && new_entry != NULL
+ *              && ((0 <= index && index < ll_size(L))
+ *              || (index < 0 && abs(index) <= ll_size(L)))
+ * */
+void *ll_update_at(ll_t L,
+                   int index,
+                   void *new_entry);
+
+#endif
