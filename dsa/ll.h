@@ -93,7 +93,7 @@ void ll_free(ll_t L);
  *
  * requires: L != NULL
  * */
-void *ll_find(ll_t L, void *key);
+void *ll_get(ll_t L, void *key);
 
 /* Returns entry at index
  *
