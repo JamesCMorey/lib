@@ -6,7 +6,8 @@
 #include <stdbool.h>
 
 /******************************************************************************/
-/****************************** CLIENT INTERFACE ******************************/
+/*                              Client Interface                              */
+/******************************************************************************/
 
 enum ll_traversalAction {
     LL_TRAVERSAL_CONTINUE,
@@ -40,7 +41,8 @@ typedef void ll_entry_free_fn(void *entry);
 typedef void ll_proc_fn(void *entry, void *context);
 
 /******************************************************************************/
-/****************************** IMPLEMENTATION ********************************/
+/*                               Implementation                               */
+/******************************************************************************/
 
 typedef struct ll_Header *ll_t;
 
@@ -66,8 +68,13 @@ struct ll_Header {
 bool ll_valid(ll_t L);
 bool ll_valid_index(ll_t L, int index);
 
+/* ====== Access ====== */
+struct ll_Node *ll_find_node(struct ll_Header *L, void *key);
+
+
 /******************************************************************************/
-/***************************** LIBRARY INTERFACE  *****************************/
+/*                             Library Interface                              */
+/******************************************************************************/
 
 //typedef struct ______ *ll_t;
 
