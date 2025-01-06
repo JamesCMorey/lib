@@ -38,7 +38,7 @@ typedef void ll_entry_free_fn(void *entry);
  *
  *
  * */
-typedef void ll_proc_fn(void *entry, void *context);
+typedef enum ll_traversalAction ll_proc_fn(void *entry, void *context);
 
 /******************************************************************************/
 /*                               Implementation                               */
@@ -71,6 +71,10 @@ bool ll_valid_index(ll_t L, int index);
 /* ====== Access ====== */
 struct ll_Node *ll_find_node(struct ll_Header *L, void *key);
 
+/* ====== Debugging ====== */
+void ll_print(struct ll_Header *L);
+
+void ll_traverse_opt(ll_t L, ll_proc_fn *p, void *context, bool rev);
 
 /******************************************************************************/
 /*                             Library Interface                              */
