@@ -47,13 +47,26 @@ int main() {
     struct entry *t2 = entry_new(2, 2);
     struct entry *t3 = entry_new(3, 3);
     struct entry *t4 = entry_new(4, 4);
-    ll_insert(L, t1);
+    struct entry *t5 = entry_new(5, 5);
+    ll_insert_at(L, t1, 0);
     ll_insert(L, t2);
     ll_insert(L, t3);
     ll_insert(L, t4);
+    ll_insert_at(L, t5, 0);
 
     printf("<HEAD>");
     ll_traverse(L, &proc, NULL);
     printf("---<TAIL>\n");
+
+    int k = 2;
+    ll_del(L, &k);
+
+    printf("<HEAD>");
+    ll_traverse(L, &proc, NULL);
+    printf("---<TAIL>\n");
+
+    printf("<TAIL>");
+    ll_traverse_rev(L, &proc, NULL);
+    printf("---<HEAD>\n");
     return 0;
 }

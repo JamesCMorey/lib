@@ -167,8 +167,8 @@ int ll_insert_tail(ll_t L, void *entry);
  * ensures: L != NULL && !ll_empty(L)
  * */
 int ll_insert_at(ll_t L,
-                 int index,
-                 void *entry);
+                 void *entry,
+                 int index);
 
 /* Searches from head and deletes first entry with key
  *

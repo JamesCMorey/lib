@@ -64,6 +64,7 @@ struct ll_Node *ll_find_node(struct ll_Header *L, void *key) {
         if (L->key_cmp(key, L->entry_key(curr->entry)) == 0) {
             return curr;
         }
+        curr = curr->next;
     }
 
     return NULL;
@@ -93,6 +94,7 @@ void *ll_at(ll_t L, int index) {
 /******************************************************************************/
 
 void ll_insert(ll_t L, void *entry) {
+    assert(ll_valid(L) && entry);
     struct ll_Node *tmp = malloc(sizeof(*tmp));
     tmp->entry = entry;
 
@@ -101,6 +103,57 @@ void ll_insert(ll_t L, void *entry) {
 
     tmp->prev->next = tmp;
     tmp->next->prev = tmp;
+}
+
+int ll_insert_tail(ll_t L, void *entry) {
+    assert(ll_valid(L) && entry);
+    struct ll_Node *tmp = malloc(sizeof(*tmp));
+    tmp->entry = entry;
+
+    tmp->next = L->tail;
+    tmp->prev = L->tail->prev;
+
+    tmp->prev->next = tmp;
+    tmp->next->prev = tmp;
+}
+
+int ll_insert_at(ll_t L,
+                 void *entry,
+                 int index) {
+    assert(ll_valid(L) && ll_valid_index(L, index) && entry);
+
+    struct ll_Node *tmp = malloc(sizeof(*tmp));
+    tmp->entry = entry;
+
+    tmp->next = L->head->next;
+
+    for (int i = 0; i < index; i++) {
+        tmp->next = tmp->next->next;
+    }
+
+    tmp->prev = tmp->next->prev;
+
+    tmp->prev->next = tmp;
+    tmp->next->prev = tmp;
+}
+
+
+int ll_del(ll_t L, void *key) {
+    assert(ll_valid(L));
+    struct ll_Node *tmp = ll_find_node(L, key);
+
+    if (tmp) {
+        tmp->next->prev = tmp->prev;
+        tmp->prev->next = tmp->next;
+
+        if (L->entry_free)
+            L->entry_free(tmp->entry);
+
+        free(tmp);
+        return 0;
+    }
+
+    return 1;
 }
 
 /******************************************************************************/
@@ -177,7 +230,7 @@ bool ll_valid(struct ll_Header *L) {
 
 bool ll_valid_index(struct ll_Header *L, int index) {
     assert(ll_valid(L));
-    return (0 <= index && index < ll_size(L))
+    return (0 <= index && index <= ll_size(L))
            || (index < 0 && -index <= ll_size(L));
 }
 
