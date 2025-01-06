@@ -34,39 +34,66 @@ enum ll_traversalAction proc(void *entry, void *context) {
     printf("---<%d, %d>", ((struct entry*)entry)->key, ((struct entry*)entry)->val);
 }
 
-int main() {
+void print_list(ll_t L) {
+    printf("<HEAD>");
+    ll_traverse(L, &proc, NULL);
+    printf("---<TAIL>\n");
+    puts("");
+}
+
+
+ll_t init_test() {
     ll_t L = ll_new(&key_cmp, &entry_key, &entry_free);
     assert(ll_valid(L));
     assert(ll_size(L) == 0 && ll_empty(L));
     assert(L->key_cmp == &key_cmp);
     assert(L->entry_key == &entry_key);
     assert(L->entry_free == &entry_free);
+    return L;
+}
 
+ll_t insertion_test() {
+    ll_t L = init_test();
 
+    puts("Inserting at index 0.");
     struct entry *t1 = entry_new(1, 1);
-    struct entry *t2 = entry_new(2, 2);
-    struct entry *t3 = entry_new(3, 3);
-    struct entry *t4 = entry_new(4, 4);
-    struct entry *t5 = entry_new(5, 5);
     ll_insert_at(L, t1, 0);
+    print_list(L);
+
+    puts("Inserting at head.");
+    struct entry *t2 = entry_new(11, 2);
     ll_insert(L, t2);
-    ll_insert(L, t3);
+    print_list(L);
+
+    puts("Inserting at tail.");
+    struct entry *t3 = entry_new(12, 3);
+    ll_insert_tail(L, t3);
+    print_list(L);
+
+    puts("Inserting at head.");
+    struct entry *t4 = entry_new(8, 4);
     ll_insert(L, t4);
-    ll_insert_at(L, t5, 0);
+    print_list(L);
 
-    printf("<HEAD>");
-    ll_traverse(L, &proc, NULL);
-    printf("---<TAIL>\n");
+    puts("Inserting at index 4.");
+    struct entry *t5 = entry_new(4, 5);
+    ll_insert_at(L, t5, 4);
+    print_list(L);
 
-    int k = 2;
-    ll_del(L, &k);
+    puts("Inserting at index 2.");
+    struct entry *t6 = entry_new(20, 6);
+    ll_insert_at(L, t6, 2);
+    print_list(L);
 
-    printf("<HEAD>");
-    ll_traverse(L, &proc, NULL);
-    printf("---<TAIL>\n");
+    return L;
+}
 
-    printf("<TAIL>");
-    ll_traverse_rev(L, &proc, NULL);
-    printf("---<HEAD>\n");
+void deletion_test() {
+
+}
+
+int main() {
+    ll_free(init_test());
+    ll_free(insertion_test());
     return 0;
 }

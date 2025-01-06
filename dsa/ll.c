@@ -6,6 +6,8 @@
 #include <stdio.h>
 
 /******************************************************************************/
+/*                                  EXTERNAL                                  */
+/******************************************************************************/
 /*                              Init & Teardown                               */
 /******************************************************************************/
 
@@ -45,35 +47,22 @@ void ll_free(ll_t L) {
 
         free(curr);
         curr = next_node;
+        next_node = next_node->next;
     }
 
     free(L->head);
     free(L->tail);
+    free(L);
 }
 
 /******************************************************************************/
 /*                                 Accessors                                  */
 /******************************************************************************/
 
-struct ll_Node *ll_find_node(struct ll_Header *L, void *key) {
-    assert(ll_valid(L));
-
-    struct ll_Node *curr = L->head->next;
-
-    while (curr != L->tail) {
-        if (L->key_cmp(key, L->entry_key(curr->entry)) == 0) {
-            return curr;
-        }
-        curr = curr->next;
-    }
-
-    return NULL;
-}
-
 void *ll_get(ll_t L, void *key) {
     assert(ll_valid(L));
 
-    struct ll_Node *tmp = ll_find_node(L, key);
+    struct ll_Node *tmp = ll_find_node(L, key, false);
 
     return tmp ? tmp->entry : NULL;
 }
@@ -93,6 +82,7 @@ void *ll_at(ll_t L, int index) {
 /*                                  Mutators                                  */
 /******************************************************************************/
 
+/* TODO: Cleanup duplicate insert code with internal helper */
 void ll_insert(ll_t L, void *entry) {
     assert(ll_valid(L) && entry);
     struct ll_Node *tmp = malloc(sizeof(*tmp));
@@ -103,6 +93,9 @@ void ll_insert(ll_t L, void *entry) {
 
     tmp->prev->next = tmp;
     tmp->next->prev = tmp;
+
+    L->size++;
+    assert(ll_valid(L));
 }
 
 int ll_insert_tail(ll_t L, void *entry) {
@@ -115,6 +108,9 @@ int ll_insert_tail(ll_t L, void *entry) {
 
     tmp->prev->next = tmp;
     tmp->next->prev = tmp;
+
+    L->size++;
+    assert(ll_valid(L));
 }
 
 int ll_insert_at(ll_t L,
@@ -135,62 +131,125 @@ int ll_insert_at(ll_t L,
 
     tmp->prev->next = tmp;
     tmp->next->prev = tmp;
+
+    L->size++;
+    assert(ll_valid(L));
 }
 
-
 int ll_del(ll_t L, void *key) {
-    assert(ll_valid(L));
-    struct ll_Node *tmp = ll_find_node(L, key);
+    assert(ll_valid(L) && !ll_empty(L));
+    struct ll_Node *tmp = ll_find_node(L, key, false);
 
     if (tmp) {
-        tmp->next->prev = tmp->prev;
-        tmp->prev->next = tmp->next;
+        ll_del_node(L, tmp);
 
-        if (L->entry_free)
-            L->entry_free(tmp->entry);
-
-        free(tmp);
+        L->size--;
+        assert(ll_valid(L));
         return 0;
     }
 
+    assert(ll_valid(L));
     return 1;
+}
+
+int ll_del_rev(ll_t L, void *key) {
+    assert(ll_valid(L) && !ll_empty(L));
+    struct ll_Node *tmp = ll_find_node(L, key, true);
+
+    if (tmp) {
+        ll_del_node(L, tmp);
+
+        L->size--;
+        assert(ll_valid(L));
+        return 0;
+    }
+
+    assert(ll_valid(L));
+    return 1;
+}
+
+int ll_del_head(ll_t L) {
+    assert(ll_valid(L) && !ll_empty(L));
+
+    ll_del_node(L, L->head->next);
+
+    L->size--;
+    assert(ll_valid(L));
+}
+
+int ll_del_tail(ll_t L) {
+    assert(ll_valid(L) && !ll_empty(L));
+
+    ll_del_node(L, L->tail->prev);
+
+    L->size--;
+    assert(ll_valid(L));
+
+}
+
+int ll_del_at(ll_t L, int index) {
+    assert(ll_valid(L) && !ll_empty(L) && ll_valid_index(L, index));
+
+    /* TODO: Move 'at' code to internal helper */
+    struct ll_Node *tmp = L->head->next;
+    for (int i = 0; i < index; i++) {
+        tmp = tmp->next;
+    }
+
+    ll_del_node(L, tmp);
+
+    L->size--;
+    assert(ll_valid(L));
+}
+
+void *ll_update(ll_t L,
+                void *key,
+                void *new_entry,
+                bool free_old) {
+    assert(ll_valid(L) && !ll_empty(L) && new_entry);
+    struct ll_Node *tmp = ll_find_node(L, key, false);
+
+    if (free_old && L->entry_free)
+        L->entry_free(tmp->entry);
+
+    tmp->entry = new_entry;
+
+    assert(ll_valid(L) && !ll_empty(L));
+}
+
+void *ll_update_at(ll_t L,
+                   int index,
+                   void *new_entry,
+                   bool free_old) {
+    assert(ll_valid(L) && ll_valid_index(L, index) && !ll_empty(L) && new_entry);
+
+    struct ll_Node *tmp = L->head->next;
+    for (int i = 0; i < index; i++) {
+        tmp = tmp->next;
+    }
+
+    if (free_old && L->entry_free)
+        L->entry_free(tmp->entry);
+
+    tmp->entry = new_entry;
+
+    assert(ll_valid(L) && !ll_empty(L));
 }
 
 /******************************************************************************/
 /*                                 Traversal                                  */
 /******************************************************************************/
 
-void ll_traverse_opt(ll_t L, ll_proc_fn *p, void *context, bool rev) {
-    assert(ll_valid(L) && p);
-
-    struct ll_Node *tmp = rev ? L->tail->prev : L->head->next;
-    enum ll_traversalAction rv;
-
-    while (tmp != L->tail && tmp != L->head) {
-        rv = p(tmp->entry, context);
-
-        switch(rv) {
-            case LL_TRAVERSAL_CONTINUE:
-                break;
-
-            case LL_TRAVERSAL_STOP:
-                return;
-
-            case LL_TRAVERSAL_DELETE: /* TODO: Implement */
-                break;
-        }
-        tmp = rev ? tmp->prev : tmp->next;
-    }
-}
-
 void ll_traverse(ll_t L, ll_proc_fn *p, void *context) {
     assert(ll_valid(L) && p);
     ll_traverse_opt(L, p, context, false);
+    assert(ll_valid(L));
 }
 
 void ll_traverse_rev(ll_t L, ll_proc_fn *p, void *context) {
     assert(ll_valid(L) && p);
     ll_traverse_opt(L, p, context, true);
+    assert(ll_valid(L));
 }
 
 /******************************************************************************/
@@ -207,6 +266,8 @@ bool ll_empty(struct ll_Header *L) {
     return !ll_size(L);
 }
 
+/******************************************************************************/
+/*                                  INTERNAL                                  */
 /******************************************************************************/
 /*                           Invariants/Validators                            */
 /******************************************************************************/
@@ -235,18 +296,61 @@ bool ll_valid_index(struct ll_Header *L, int index) {
 }
 
 /******************************************************************************/
-/*                                 Debugging                                  */
+/*                                  Helpers                                   */
 /******************************************************************************/
 
-void ll_print(struct ll_Header *L) {
-    printf("<HEAD>");
+void ll_del_node(ll_t L, struct ll_Node *N) {
+    assert(ll_valid(L) && N);
 
-    struct ll_Node *curr = L->head->next;
-    while (curr != L->tail) {
-        printf("-<???>");
-        curr = curr->next;
+    N->next->prev = N->prev;
+    N->prev->next = N->next;
+
+    if (L->entry_free)
+        L->entry_free(N->entry);
+
+    free(N);
+    assert(ll_valid(L));
+}
+
+void ll_traverse_opt(ll_t L, ll_proc_fn *p, void *context, bool rev) {
+    assert(ll_valid(L) && p);
+
+    struct ll_Node *tmp = rev ? L->tail->prev : L->head->next;
+    enum ll_traversalAction rv;
+
+    while (tmp != L->tail && tmp != L->head) {
+        rv = p(tmp->entry, context);
+
+        switch(rv) {
+            case LL_TRAVERSAL_CONTINUE:
+                break;
+
+            case LL_TRAVERSAL_STOP:
+                assert(ll_valid(L));
+                return;
+
+            case LL_TRAVERSAL_DELETE: /* TODO: Implement */
+                break;
+        }
+        tmp = rev ? tmp->prev : tmp->next;
+    }
+    assert(ll_valid(L));
+}
+
+struct ll_Node *ll_find_node(struct ll_Header *L, void *key, bool rev) {
+    assert(ll_valid(L));
+
+    struct ll_Node *curr = rev ? L->tail->prev : L->head->next;
+
+    while (curr != L->tail && curr != L->head) {
+        if (L->key_cmp(key, L->entry_key(curr->entry)) == 0) {
+            assert(ll_valid(L));
+            return curr;
+        }
+        curr = rev ? curr->prev : curr->next;
     }
 
-    printf("-<TAIL>\n");
+    assert(ll_valid(L));
+    return NULL;
 }
 

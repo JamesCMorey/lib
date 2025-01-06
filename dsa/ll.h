@@ -68,13 +68,10 @@ struct ll_Header {
 bool ll_valid(ll_t L);
 bool ll_valid_index(ll_t L, int index);
 
-/* ====== Access ====== */
-struct ll_Node *ll_find_node(struct ll_Header *L, void *key);
-
-/* ====== Debugging ====== */
-void ll_print(struct ll_Header *L);
-
+/* ====== Helpers ====== */
+struct ll_Node *ll_find_node(struct ll_Header *L, void *key, bool rev);
 void ll_traverse_opt(ll_t L, ll_proc_fn *p, void *context, bool rev);
+void ll_del_node(ll_t L, struct ll_Node *N);
 
 /******************************************************************************/
 /*                             Library Interface                              */
@@ -175,7 +172,7 @@ int ll_insert_at(ll_t L,
  * Inserts in front of node at index passed, thereby occupying the index.
  * Allows for negative indexing where -1 is the tail node.
  *
- * requires: L != NULL && !ll_empty(L) && entry_key != NULL && key_cmp != NULL
+ * requires: L != NULL && !ll_empty(L)
  * ensures: L != NULL
  * */
 int ll_del(ll_t L, void *key);
@@ -221,7 +218,7 @@ int ll_del_at(ll_t L, int index);
 void *ll_update(ll_t L,
                 void *key,
                 void *new_entry,
-                int free_old);
+                bool free_old);
 
 /* Find entry at index and replace it with new_entry, freeing the old entry if
  * the free_old flag is set. Returns old entry if free_old is not set.
@@ -232,6 +229,7 @@ void *ll_update(ll_t L,
  * */
 void *ll_update_at(ll_t L,
                    int index,
-                   void *new_entry);
+                   void *new_entry,
+                   bool free_old);
 
 #endif
