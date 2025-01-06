@@ -1,3 +1,4 @@
+#pragma once
 #ifndef LL_H
 #define LL_H
 
@@ -7,38 +8,62 @@
 /******************************************************************************/
 /****************************** CLIENT INTERFACE ******************************/
 
-/* Return: rv > 0 if k1 > k2, rv < 0 if k1 < k2, and rv == 0 if k1 == k2 */
-typedef int key_cmp_fn(void *e1, void *e2);
-typedef void *entry_key_fn(void *entry);
-typedef void entry_free_fn(void *entry);
+enum ll_traversalAction {
+    LL_TRAVERSAL_CONTINUE,
+    LL_TRAVERSAL_STOP,     /* Stop traversal */
+    LL_TRAVERSAL_DELETE,   /* Delete the node/entry just processed */
+};
 
-typedef void process_fn(void *entry, void *context);
+/* Takes two keys and compares them
+ *
+ * ensures: (rv > 0 && k1 > k2) || (rv < 0 && k1 < k2) || (rv == 0 && k1 == k2)
+ * */
+typedef int ll_key_cmp_fn(void *k1, void *k2);
+
+/* Takes a given entry and returns its key.
+ *
+ * requires: entry != NULL
+ * */
+typedef void *ll_entry_key_fn(void *entry);
+
+/* Frees a given entry
+ *
+ * requires entry != NULL
+ * */
+typedef void ll_entry_free_fn(void *entry);
+
+/* Run ll_proc_fn on a given entry with the given context when doing operations
+ * like list traversal and return an action depending on the entry.
+ *
+ *
+ * */
+typedef void ll_proc_fn(void *entry, void *context);
 
 /******************************************************************************/
 /****************************** IMPLEMENTATION ********************************/
 
-typedef struct ll_header *ll_t;
+typedef struct ll_Header *ll_t;
 
-struct ll_node {
+struct ll_Node {
     void *entry;
-    struct ll_node *next;
-    struct ll_node *prev;
+    struct ll_Node *next;
+    struct ll_Node *prev;
 };
 
-struct ll_header {
+struct ll_Header {
     /* Points to dummy nodes */
-    struct ll_node *head;
-    struct ll_node *tail;
+    struct ll_Node *head;
+    struct ll_Node *tail;
 
     size_t size;
 
-    key_cmp_fn *key_cmp;
-    entry_key_fn *entry_key;
-    entry_free_fn *entry_free;
+    ll_key_cmp_fn *key_cmp;
+    ll_entry_key_fn *entry_key;
+    ll_entry_free_fn *entry_free;
 };
 
 /* ====== Validation ====== */
-bool is_ll(ll_t L);
+bool ll_valid(ll_t L);
 bool ll_valid_index(ll_t L, int index);
 
 /******************************************************************************/
@@ -52,7 +77,9 @@ bool ll_valid_index(ll_t L, int index);
  *
  * ensures: rv != NULL
  * */
-ll_t ll_new();
+ll_t ll_new(ll_key_cmp_fn *key_cmp,
+            ll_entry_key_fn *entry_key,
+            ll_entry_free_fn *entry_free);
 
 /* Free linked list alongside entries if free_entries_fn is defined
  *
@@ -73,7 +100,7 @@ void *ll_find(ll_t L, void *key);
  * requires: L != NULL && ((0 <= index && index < size(L))
  *                          || (index < 0 && -index <= size(L)))
  * */
-void *ll_get(ll_t L, int index);
+void *ll_at(ll_t L, int index);
 
 /* Returns size_t integer for amount of entries in list
  *
@@ -88,19 +115,19 @@ size_t ll_size(ll_t L);
  * ensures: (rv == 1 && ll_size(L) == 0)
  *              || (rv == 0 && ll_size(L) > 0)
  * */
-int ll_empty(ll_t L);
+bool ll_empty(ll_t L);
 
 /* Traverses L from head, calling p and passing each node and the context to p
  *
  * requires: L != NULL && p != NULL
  * */
-void ll_traverse(ll_t L, process_fn *p, void *context);
+void ll_traverse(ll_t L, ll_proc_fn *p, void *context);
 
 /* Traverses L from tail, calling p and passing each node and the context to p
  *
  * requires: L != NULL && p != NULL
  * */
-void ll_traverse_rev(ll_t L, process_fn *p, void *context);
+void ll_traverse_rev(ll_t L, ll_proc_fn *p, void *context);
 
 /* ====== Mutators ====== */
 
