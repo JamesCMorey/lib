@@ -55,6 +55,21 @@ ll_t init_test() {
 ll_t insertion_test() {
     ll_t L = init_test();
 
+    puts("Inserting at head.");
+    struct entry *t7 = entry_new(11, 2);
+    ll_insert(L, t7);
+    print_list(L);
+    ll_free(L);
+
+    L = init_test();
+    puts("Inserting at tail.");
+    struct entry *t8 = entry_new(11, 2);
+    ll_insert_tail(L, t8);
+    print_list(L);
+    ll_free(L);
+
+    L = init_test();
+
     puts("Inserting at index 0.");
     struct entry *t1 = entry_new(1, 1);
     ll_insert_at(L, t1, 0);
@@ -89,11 +104,57 @@ ll_t insertion_test() {
 }
 
 void deletion_test() {
+    ll_t L = insertion_test();
+    print_list(L);
 
+
+    puts("Deleting index 2.");
+    ll_del_at(L, 2);
+    print_list(L);
+
+    puts("Inserting at index 2.");
+    struct entry *t1 = entry_new(20, 6);
+    ll_insert_at(L, t1, 2);
+    print_list(L);
+
+    puts("Deleting head.");
+    ll_del_head(L);
+    print_list(L);
+
+    puts("Deleting tail.");
+    ll_del_tail(L);
+    print_list(L);
+
+
+    puts("Deleting entry with key 11.");
+    int k = 11;
+    ll_del(L, &k);
+    print_list(L);
+
+    puts("Deleting entry with key 12.");
+    k = 12;
+    ll_del(L, &k);
+    print_list(L);
+
+    puts("Inserting at index 2.");
+    struct entry *t2 = entry_new(20, 7);
+    ll_insert_at(L, t2, 2);
+    print_list(L);
+
+    puts("Deleting entry with key 20 from tail.");
+    k = 20;
+    ll_del_rev(L, &k);
+    print_list(L);
+
+    ll_free(L);
 }
 
 int main() {
+    puts("Init / free test");
     ll_free(init_test());
+    puts("Insertion test");
     ll_free(insertion_test());
+    puts("Deletion test");
+    deletion_test();
     return 0;
 }
