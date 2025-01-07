@@ -85,7 +85,6 @@ void *ll_get(ll_t L, void *key) {
     assert(ll_valid(L));
 
     struct ll_Node *tmp = ll_find_node(L, key, false);
-
     return tmp ? tmp->entry : NULL;
 }
 
@@ -104,7 +103,6 @@ void ll_insert(ll_t L, void *entry) {
 
     ll_insert_node(L, entry, L->head->next, L->head);
 
-    L->size++;
     assert(ll_valid(L));
 }
 
@@ -113,7 +111,6 @@ int ll_insert_tail(ll_t L, void *entry) {
 
     ll_insert_node(L, entry, L->tail, L->tail->prev);
 
-    L->size++;
     assert(ll_valid(L));
 }
 
@@ -125,7 +122,6 @@ int ll_insert_at(ll_t L,
     struct ll_Node *tmp = ll_node_at(L, index);
     ll_insert_node(L, entry, tmp, tmp->prev);
 
-    L->size++;
     assert(ll_valid(L));
 }
 
@@ -136,7 +132,6 @@ int ll_del(ll_t L, void *key) {
     if (tmp) {
         ll_del_node(L, tmp);
 
-        L->size--;
         assert(ll_valid(L));
         return 0;
     }
@@ -152,7 +147,6 @@ int ll_del_rev(ll_t L, void *key) {
     if (tmp) {
         ll_del_node(L, tmp);
 
-        L->size--;
         assert(ll_valid(L));
         return 0;
     }
@@ -166,7 +160,6 @@ int ll_del_head(ll_t L) {
 
     ll_del_node(L, L->head->next);
 
-    L->size--;
     assert(ll_valid(L));
 }
 
@@ -175,7 +168,6 @@ int ll_del_tail(ll_t L) {
 
     ll_del_node(L, L->tail->prev);
 
-    L->size--;
     assert(ll_valid(L));
 
 }
@@ -185,7 +177,6 @@ int ll_del_at(ll_t L, int index) {
 
     ll_del_node(L, ll_node_at(L, index));
 
-    L->size--;
     assert(ll_valid(L));
 }
 
@@ -293,6 +284,8 @@ static void ll_del_node(ll_t L, struct ll_Node *N) {
         L->entry_free(N->entry);
 
     free(N);
+    L->size--;
+
     assert(ll_valid(L));
 }
 
@@ -372,4 +365,5 @@ static void ll_insert_node(ll_t L,
     /* Correct pointers in list to point at new node */
     tmp->prev->next = tmp;
     tmp->next->prev = tmp;
+    L->size++;
 }
