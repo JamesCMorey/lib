@@ -30,13 +30,13 @@ void entry_free(void *entry) {
     free(entry);
 }
 
-enum ll_traversalAction proc(void *entry, void *context) {
+enum ll_traversalAction print_proc(void *entry, void *context) {
     printf("---<%d, %d>", ((struct entry*)entry)->key, ((struct entry*)entry)->val);
 }
 
 void print_list(ll_t L) {
     printf("<HEAD>");
-    ll_traverse(L, &proc, NULL);
+    ll_traverse(L, &print_proc, NULL);
     printf("---<TAIL>\n");
     puts("");
 }
@@ -175,6 +175,40 @@ void get_test() {
     puts("");
 }
 
+enum ll_traversalAction del_proc(void *entry, void *context) {
+    if (((struct entry*)entry)->key == 100) {
+        (*(int*)context)++;
+        return LL_TRAVERSAL_DELETE;
+    }
+
+    return LL_TRAVERSAL_CONTINUE;
+}
+
+
+void traversal_test() {
+    ll_t L = insertion_test();
+
+    puts("Deleting 100s.");
+    ll_traverse(L, &del_proc, NULL);
+    print_list(L);
+
+    puts("Inserting at index 2.");
+    struct entry *t1 = entry_new(100, 6);
+    ll_insert_at(L, t1, 2);
+    print_list(L);
+
+    puts("Inserting at index 0.");
+    struct entry *t2 = entry_new(100, 6);
+    ll_insert_at(L, t2, 0);
+    print_list(L);
+
+    int del_count = 0;
+    puts("Deleting 100s.");
+    ll_traverse(L, &del_proc, &del_count);
+    printf("Deleted %d node(s)\n", del_count);
+    print_list(L);
+}
+
 int main() {
     puts("Init / free test");
     ll_free(init_test());
@@ -184,5 +218,7 @@ int main() {
     deletion_test();
     puts("get test");
     get_test();
+    puts("traversal test");
+    traversal_test();
     return 0;
 }

@@ -100,17 +100,13 @@ void *ll_at(ll_t L, int index) {
 
 void ll_insert(ll_t L, void *entry) {
     assert(ll_valid(L) && entry);
-
     ll_insert_node(L, entry, L->head->next, L->head);
-
     assert(ll_valid(L));
 }
 
 int ll_insert_tail(ll_t L, void *entry) {
     assert(ll_valid(L) && entry);
-
     ll_insert_node(L, entry, L->tail, L->tail->prev);
-
     assert(ll_valid(L));
 }
 
@@ -157,26 +153,20 @@ int ll_del_rev(ll_t L, void *key) {
 
 int ll_del_head(ll_t L) {
     assert(ll_valid(L) && !ll_empty(L));
-
     ll_del_node(L, L->head->next);
-
     assert(ll_valid(L));
 }
 
 int ll_del_tail(ll_t L) {
     assert(ll_valid(L) && !ll_empty(L));
-
     ll_del_node(L, L->tail->prev);
-
     assert(ll_valid(L));
 
 }
 
 int ll_del_at(ll_t L, int index) {
     assert(ll_valid(L) && !ll_empty(L) && ll_valid_index(L, index));
-
     ll_del_node(L, ll_node_at(L, index));
-
     assert(ll_valid(L));
 }
 
@@ -292,11 +282,12 @@ static void ll_del_node(ll_t L, struct ll_Node *N) {
 static void ll_traverse_opt(ll_t L, ll_proc_fn *p, void *context, bool rev) {
     assert(ll_valid(L) && p);
 
-    struct ll_Node *tmp = rev ? L->tail->prev : L->head->next;
+    struct ll_Node *curr = rev ? L->tail->prev : L->head->next;
+    struct ll_Node *tmp;
     enum ll_traversalAction rv;
 
-    while (tmp != L->tail && tmp != L->head) {
-        rv = p(tmp->entry, context);
+    while (curr != L->tail && curr != L->head) {
+        rv = p(curr->entry, context);
 
         switch(rv) {
             case LL_TRAVERSAL_CONTINUE:
@@ -306,10 +297,14 @@ static void ll_traverse_opt(ll_t L, ll_proc_fn *p, void *context, bool rev) {
                 assert(ll_valid(L));
                 return;
 
-            case LL_TRAVERSAL_DELETE: /* TODO: Implement */
-                break;
+            case LL_TRAVERSAL_DELETE:
+                tmp = curr;
+                curr = rev ? curr->prev : curr->next;
+                ll_del_node(L, tmp);
+                continue;
         }
-        tmp = rev ? tmp->prev : tmp->next;
+
+        curr = rev ? curr->prev : curr->next;
     }
     assert(ll_valid(L));
 }
