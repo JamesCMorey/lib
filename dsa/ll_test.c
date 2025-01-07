@@ -41,7 +41,6 @@ void print_list(ll_t L) {
     puts("");
 }
 
-
 ll_t init_test() {
     ll_t L = ll_new(&key_cmp, &entry_key, &entry_free);
     assert(ll_valid(L));
@@ -149,6 +148,34 @@ void deletion_test() {
     ll_free(L);
 }
 
+void print_entry(void *entry) {
+    printf("<%d, %d>\n", ((struct entry*)entry)->key, ((struct entry*)entry)->val);
+}
+
+void get_test() {
+    ll_t L = insertion_test();
+
+    printf("Entry at index 0: ");
+    print_entry(ll_at(L, 0));
+
+    printf("Entry at index 1: ");
+    print_entry(ll_at(L, 1));
+
+    printf("Entry at index 5: ");
+    print_entry(ll_at(L, 5));
+
+    printf("Entry at index -1: ");
+    print_entry(ll_at(L, -1));
+
+    printf("Entry at index -3: ");
+    print_entry(ll_at(L, -3));
+
+    printf("Entry at index -6: ");
+    print_entry(ll_at(L, -6));
+
+    puts("");
+}
+
 int main() {
     puts("Init / free test");
     ll_free(init_test());
@@ -156,5 +183,7 @@ int main() {
     ll_free(insertion_test());
     puts("Deletion test");
     deletion_test();
+    puts("get test");
+    get_test();
     return 0;
 }

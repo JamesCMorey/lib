@@ -70,12 +70,7 @@ void *ll_get(ll_t L, void *key) {
 void *ll_at(ll_t L, int index) {
     assert(ll_valid(L) && ll_valid_index(L, index));
 
-    struct ll_Node *curr = L->head->next;
-    for (int i = 0; i < index; i++) {
-        curr = curr->next;
-    }
-
-    return curr->entry;
+    return ll_node_at(L, index)->entry;
 }
 
 /******************************************************************************/
@@ -118,17 +113,13 @@ int ll_insert_at(ll_t L,
                  int index) {
     assert(ll_valid(L) && ll_valid_index(L, index) && entry);
 
+    /* Create node and fill out info */
     struct ll_Node *tmp = malloc(sizeof(*tmp));
     tmp->entry = entry;
-
-    tmp->next = L->head->next;
-
-    for (int i = 0; i < index; i++) {
-        tmp->next = tmp->next->next;
-    }
-
+    tmp->next = ll_node_at(L, index);
     tmp->prev = tmp->next->prev;
 
+    /* Correct pointers in list to point at new node */
     tmp->prev->next = tmp;
     tmp->next->prev = tmp;
 
@@ -190,13 +181,7 @@ int ll_del_tail(ll_t L) {
 int ll_del_at(ll_t L, int index) {
     assert(ll_valid(L) && !ll_empty(L) && ll_valid_index(L, index));
 
-    /* TODO: Move 'at' code to internal helper */
-    struct ll_Node *tmp = L->head->next;
-    for (int i = 0; i < index; i++) {
-        tmp = tmp->next;
-    }
-
-    ll_del_node(L, tmp);
+    ll_del_node(L, ll_node_at(L, index));
 
     L->size--;
     assert(ll_valid(L));
@@ -223,10 +208,7 @@ void *ll_update_at(ll_t L,
                    bool free_old) {
     assert(ll_valid(L) && ll_valid_index(L, index) && !ll_empty(L) && new_entry);
 
-    struct ll_Node *tmp = L->head->next;
-    for (int i = 0; i < index; i++) {
-        tmp = tmp->next;
-    }
+    struct ll_Node *tmp = ll_node_at(L, index);
 
     if (free_old && L->entry_free)
         L->entry_free(tmp->entry);
@@ -354,3 +336,22 @@ struct ll_Node *ll_find_node(struct ll_Header *L, void *key, bool rev) {
     return NULL;
 }
 
+struct ll_Node *ll_node_at(ll_t L, int index) {
+    assert(ll_valid(L) && ll_valid_index(L, index));
+
+    struct ll_Node *curr;
+    if (index >= 0) {
+        curr = L->head->next;
+        for (int i = 0; i < index; i++) {
+            curr = curr->next;
+        }
+    } else {
+        curr = L->tail->prev;
+
+        for (int i = -1; i > index; i--) {
+            curr = curr->prev;
+        }
+    }
+
+    return curr;
+}
