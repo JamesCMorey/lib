@@ -6,6 +6,28 @@
 #include <stdio.h>
 
 /******************************************************************************/
+/*                                  INTERNAL                                  */
+/******************************************************************************/
+/*                               Helper Headers                               */
+/******************************************************************************/
+
+static struct ll_Node *ll_find_node(struct ll_Header *L, void *key, bool rev);
+static void ll_traverse_opt(ll_t L, ll_proc_fn *p, void *context, bool rev);
+static void ll_del_node(ll_t L, struct ll_Node *N);
+static struct ll_Node *ll_node_at(ll_t L, int index);
+static void ll_insert_node(ll_t L,
+                    void *entry,
+                    struct ll_Node *next,
+                    struct ll_Node *prev);
+
+/******************************************************************************/
+/*                             Validation Headers                             */
+/******************************************************************************/
+
+static bool ll_valid(ll_t L);
+static bool ll_valid_index(ll_t L, int index);
+
+/******************************************************************************/
 /*                                  EXTERNAL                                  */
 /******************************************************************************/
 /*                              Init & Teardown                               */
@@ -234,7 +256,7 @@ bool ll_empty(struct ll_Header *L) {
 /*                           Invariants/Validators                            */
 /******************************************************************************/
 
-bool ll_valid(struct ll_Header *L) {
+static bool ll_valid(struct ll_Header *L) {
     if (L == NULL || L->head == NULL || L->tail == NULL)
         return false;
 
@@ -251,7 +273,7 @@ bool ll_valid(struct ll_Header *L) {
     return true;
 }
 
-bool ll_valid_index(struct ll_Header *L, int index) {
+static bool ll_valid_index(struct ll_Header *L, int index) {
     assert(ll_valid(L));
     return (0 <= index && index <= ll_size(L))
            || (index < 0 && -index <= ll_size(L));
@@ -261,7 +283,7 @@ bool ll_valid_index(struct ll_Header *L, int index) {
 /*                                  Helpers                                   */
 /******************************************************************************/
 
-void ll_del_node(ll_t L, struct ll_Node *N) {
+static void ll_del_node(ll_t L, struct ll_Node *N) {
     assert(ll_valid(L) && N);
 
     N->next->prev = N->prev;
@@ -274,7 +296,7 @@ void ll_del_node(ll_t L, struct ll_Node *N) {
     assert(ll_valid(L));
 }
 
-void ll_traverse_opt(ll_t L, ll_proc_fn *p, void *context, bool rev) {
+static void ll_traverse_opt(ll_t L, ll_proc_fn *p, void *context, bool rev) {
     assert(ll_valid(L) && p);
 
     struct ll_Node *tmp = rev ? L->tail->prev : L->head->next;
@@ -299,7 +321,7 @@ void ll_traverse_opt(ll_t L, ll_proc_fn *p, void *context, bool rev) {
     assert(ll_valid(L));
 }
 
-struct ll_Node *ll_find_node(struct ll_Header *L, void *key, bool rev) {
+static struct ll_Node *ll_find_node(struct ll_Header *L, void *key, bool rev) {
     assert(ll_valid(L));
 
     struct ll_Node *curr = rev ? L->tail->prev : L->head->next;
@@ -336,7 +358,7 @@ struct ll_Node *ll_node_at(ll_t L, int index) {
     return curr;
 }
 
-void ll_insert_node(ll_t L,
+static void ll_insert_node(ll_t L,
                     void *entry,
                     struct ll_Node *next,
                     struct ll_Node *prev) {

@@ -43,7 +43,6 @@ void print_list(ll_t L) {
 
 ll_t init_test() {
     ll_t L = ll_new(&key_cmp, &entry_key, &entry_free);
-    assert(ll_valid(L));
     assert(ll_size(L) == 0 && ll_empty(L));
     assert(L->key_cmp == &key_cmp);
     assert(L->entry_key == &entry_key);
