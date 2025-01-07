@@ -77,17 +77,10 @@ void *ll_at(ll_t L, int index) {
 /*                                  Mutators                                  */
 /******************************************************************************/
 
-/* TODO: Cleanup duplicate insert code with internal helper */
 void ll_insert(ll_t L, void *entry) {
     assert(ll_valid(L) && entry);
-    struct ll_Node *tmp = malloc(sizeof(*tmp));
-    tmp->entry = entry;
 
-    tmp->next = L->head->next;
-    tmp->prev = L->head;
-
-    tmp->prev->next = tmp;
-    tmp->next->prev = tmp;
+    ll_insert_node(L, entry, L->head->next, L->head);
 
     L->size++;
     assert(ll_valid(L));
@@ -95,14 +88,8 @@ void ll_insert(ll_t L, void *entry) {
 
 int ll_insert_tail(ll_t L, void *entry) {
     assert(ll_valid(L) && entry);
-    struct ll_Node *tmp = malloc(sizeof(*tmp));
-    tmp->entry = entry;
 
-    tmp->next = L->tail;
-    tmp->prev = L->tail->prev;
-
-    tmp->prev->next = tmp;
-    tmp->next->prev = tmp;
+    ll_insert_node(L, entry, L->tail, L->tail->prev);
 
     L->size++;
     assert(ll_valid(L));
@@ -113,15 +100,8 @@ int ll_insert_at(ll_t L,
                  int index) {
     assert(ll_valid(L) && ll_valid_index(L, index) && entry);
 
-    /* Create node and fill out info */
-    struct ll_Node *tmp = malloc(sizeof(*tmp));
-    tmp->entry = entry;
-    tmp->next = ll_node_at(L, index);
-    tmp->prev = tmp->next->prev;
-
-    /* Correct pointers in list to point at new node */
-    tmp->prev->next = tmp;
-    tmp->next->prev = tmp;
+    struct ll_Node *tmp = ll_node_at(L, index);
+    ll_insert_node(L, entry, tmp, tmp->prev);
 
     L->size++;
     assert(ll_valid(L));
@@ -354,4 +334,20 @@ struct ll_Node *ll_node_at(ll_t L, int index) {
     }
 
     return curr;
+}
+
+void ll_insert_node(ll_t L,
+                    void *entry,
+                    struct ll_Node *next,
+                    struct ll_Node *prev) {
+
+    /* Create node and fill out info */
+    struct ll_Node *tmp = malloc(sizeof(*tmp));
+    tmp->entry = entry;
+    tmp->next = next;
+    tmp->prev = prev;
+
+    /* Correct pointers in list to point at new node */
+    tmp->prev->next = tmp;
+    tmp->next->prev = tmp;
 }

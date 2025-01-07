@@ -73,6 +73,10 @@ struct ll_Node *ll_find_node(struct ll_Header *L, void *key, bool rev);
 void ll_traverse_opt(ll_t L, ll_proc_fn *p, void *context, bool rev);
 void ll_del_node(ll_t L, struct ll_Node *N);
 struct ll_Node *ll_node_at(ll_t L, int index);
+void ll_insert_node(ll_t L,
+                    void *entry,
+                    struct ll_Node *next,
+                    struct ll_Node *prev);
 
 /******************************************************************************/
 /*                             Library Interface                              */
