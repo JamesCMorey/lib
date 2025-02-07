@@ -14,7 +14,7 @@ static bool uba_index_valid(uba_t U, size_t index) {
     assert(U != NULL);
     return 0 <= index
       && ((!uba_raw(U) && index < uba_size(U))
-         || uba_raw(U) && index < uba_limit(U));
+         || (uba_raw(U) && index < uba_limit(U)));
 }
 
 /******************************************************************************/
@@ -82,6 +82,7 @@ bool uba_empty(uba_t U) {
 void uba_resize(uba_t U, size_t new_limit) {
     assert(U != NULL && uba_size(U) < new_limit && new_limit <= ULONG_MAX / 2);
 
+    U->limit = new_limit;
     void **arr = malloc(sizeof(void *) * new_limit);
     for (size_t i = 0; i < uba_size(U); i++) {
         arr[i] = U->data[i];
@@ -98,7 +99,7 @@ void uba_push(uba_t U, void *entry) {
     if (uba_size(U) >= uba_limit(U))
         uba_resize(U, uba_limit(U) * 2);
 
-    uba_set(U, uba_size(U), entry);
+    uba_set(U, uba_size(U) - 1, entry);
 }
 
 void uba_pop(uba_t U) {
