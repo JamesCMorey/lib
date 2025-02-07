@@ -1,4 +1,4 @@
-#include "ll.h"
+#include "ds/ll.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -101,7 +101,7 @@ ll_t insertion_test() {
     return L;
 }
 
-void deletion_test() {
+ll_t deletion_test() {
     ll_t L = insertion_test();
     print_list(L);
 
@@ -144,14 +144,14 @@ void deletion_test() {
     ll_del_rev(L, &k);
     print_list(L);
 
-    ll_free(L);
+    return L;
 }
 
 void print_entry(void *entry) {
     printf("<%d, %d>\n", ((struct entry*)entry)->key, ((struct entry*)entry)->val);
 }
 
-void get_test() {
+ll_t get_test() {
     ll_t L = insertion_test();
 
     printf("Entry at index 0: ");
@@ -173,6 +173,8 @@ void get_test() {
     print_entry(ll_at(L, -6));
 
     puts("");
+
+    return L;
 }
 
 enum ll_traversalAction del_proc(void *entry, void *context) {
@@ -185,7 +187,7 @@ enum ll_traversalAction del_proc(void *entry, void *context) {
 }
 
 
-void traversal_test() {
+ll_t traversal_test() {
     ll_t L = insertion_test();
 
     puts("Deleting 100s.");
@@ -207,6 +209,8 @@ void traversal_test() {
     ll_traverse(L, &del_proc, &del_count);
     printf("Deleted %d node(s)\n", del_count);
     print_list(L);
+
+    return L;
 }
 
 int main() {
@@ -215,10 +219,10 @@ int main() {
     puts("Insertion test");
     ll_free(insertion_test());
     puts("Deletion test");
-    deletion_test();
+    ll_free(deletion_test());
     puts("get test");
-    get_test();
+    ll_free(get_test());
     puts("traversal test");
-    traversal_test();
+    ll_free(traversal_test());
     return 0;
 }
