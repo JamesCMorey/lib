@@ -76,6 +76,19 @@ bool uba_raw(uba_t U);
  * */
 bool uba_empty(uba_t U);
 
+/******************************************************************************/
+/*                             High-Level Access                              */
+/******************************************************************************/
+
+/* Return entry at index
+ *
+ * requires: U != NULL && 0 <= index
+ *              && ((!uba_raw(U) && index < uba_size(U))
+ *                || (uba_raw(U) && index < uba_limit(U)))
+ * ensures: U != NULL
+ * */
+void *uba_get(uba_t U, size_t index);
+
 /* Add entry to end of uba's used space
  *
  * requires: U != NULL && !uba_raw(U)
@@ -90,12 +103,38 @@ void uba_push(uba_t U, void *entry);
  * */
 void uba_pop(uba_t U);
 
-/* Return entry at index
+/* Insert entry at index, moving current index to the right
  *
- * requires: U != NULL && 0 <= index && index < uba_limit(U)
+ * requires: U != NULL && !uba_raw(U) && 0 <= index && index <= uba_size(U)
  * ensures: U != NULL
  * */
-void *uba_get(uba_t U, size_t index);
+void uba_insert(uba_t U, size_t index, void *entry);
+
+/* Remove (and free) entry at index, moving higher-index entries to the left
+ *
+ * requires: U != null && !uba_raw(U) && uba_size(U) > 0
+ *              0 <= index && index < uba_size(U)
+ * ensures: U != NULL
+ * */
+void uba_remove(uba_t U, size_t index);
+
+/* Update entry at index, freeing old entry *
+ * requires: U != null && !uba_raw(U) && uba_size(U) > 0
+ *              0 <= index && index < uba_size(U)
+ * ensures: U != null
+ * */
+void uba_update(uba_t U, size_t index, void *entry);
+
+/* Shrink reserved space to used space
+ *
+ * requires: U != null
+ * ensures: U != null
+ * */
+void uba_shrink(uba_t U);
+
+/******************************************************************************/
+/*                              Low-Level Access                              */
+/******************************************************************************/
 
 /* Set index of uba to entry and resize if necessary
  *

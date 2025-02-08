@@ -10,11 +10,19 @@
 /*                                  Helpers                                   */
 /******************************************************************************/
 
+static void uba_resize_auto(uba_t U) {
+    assert(U != NULL);
+
+    if (uba_size(U) >= uba_limit(U))
+        uba_resize(U, uba_limit(U) * 2);
+}
+
 static bool uba_index_valid(uba_t U, size_t index) {
     assert(U != NULL);
+
     return 0 <= index
-      && ((!uba_raw(U) && index < uba_size(U))
-         || (uba_raw(U) && index < uba_limit(U)));
+      && ((!uba_raw(U) && index <= uba_size(U))
+        || (uba_raw(U) && index < uba_limit(U)));
 }
 
 /******************************************************************************/
@@ -82,7 +90,7 @@ bool uba_empty(uba_t U) {
 void uba_resize(uba_t U, size_t new_limit) {
     assert(U != NULL && uba_size(U) < new_limit && new_limit <= ULONG_MAX / 2);
 
-    U->limit = new_limit;
+    U->limit = new_limit == 0 ? 1 : new_limit;
     void **arr = malloc(sizeof(void *) * new_limit);
     for (size_t i = 0; i < uba_size(U); i++) {
         arr[i] = U->data[i];
@@ -95,9 +103,7 @@ void uba_resize(uba_t U, size_t new_limit) {
 void uba_push(uba_t U, void *entry) {
     assert(U != NULL && !uba_raw(U));
     U->size++;
-
-    if (uba_size(U) >= uba_limit(U))
-        uba_resize(U, uba_limit(U) * 2);
+    uba_resize_auto(U);
 
     uba_set(U, uba_size(U) - 1, entry);
 }
@@ -110,6 +116,45 @@ void uba_pop(uba_t U) {
         U->entry_free(U->data[U->size]);
 
     U->data[U->size] = NULL;
+}
+
+void uba_insert(uba_t U, size_t index, void *entry) {
+    assert(U != NULL && !uba_raw(U) && 0 <= index && index <= uba_size(U));
+    U->size++;
+    uba_resize_auto(U);
+
+    for(size_t i = uba_size(U); i > index; i--) {
+        uba_set(U, i, uba_get(U, i - 1));
+    }
+
+    uba_set(U, index, entry);
+}
+
+void uba_remove(uba_t U, size_t index) {
+    assert(U != NULL && !uba_raw(U) && uba_size(U) > 0
+            && 0 <= index && index < uba_size(U));
+    U->size--;
+
+    if (U->entry_free)
+        U->entry_free(U->data[index]);
+
+    for(size_t i = uba_size(U) - 1; i > index; i--) {
+        uba_set(U, i - 1, uba_get(U, i));
+    }
+}
+
+void uba_update(uba_t U, size_t index, void *entry) {
+    assert(U != NULL && !uba_raw(U) && 0 <= index && index < uba_size(U));
+
+    if (U->entry_free)
+        U->entry_free(U->data[index]);
+
+    uba_set(U, index, entry);
+}
+
+void uba_shrink(uba_t U) {
+    assert(U != NULL);
+    uba_resize(U, uba_size(U) + 1);
 }
 
 /******************************************************************************/
