@@ -133,14 +133,17 @@ void uba_insert(uba_t U, size_t index, void *entry) {
 void uba_remove(uba_t U, size_t index) {
     assert(U != NULL && !uba_raw(U) && uba_size(U) > 0
             && 0 <= index && index < uba_size(U));
-    U->size--;
 
     if (U->entry_free)
         U->entry_free(U->data[index]);
 
-    for(size_t i = uba_size(U) - 1; i > index; i--) {
-        uba_set(U, i - 1, uba_get(U, i));
+    for(size_t i = index; i < uba_size(U) - 1; i++) {
+        uba_set(U, i, uba_get(U, i + 1));
     }
+
+    uba_set(U, uba_size(U), NULL);
+
+    U->size--;
 }
 
 void uba_update(uba_t U, size_t index, void *entry) {
