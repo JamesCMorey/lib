@@ -117,7 +117,9 @@ void uba_pop(uba_t U) {
 /******************************************************************************/
 
 void *uba_get(uba_t U, size_t index) {
-    assert(U != NULL && uba_index_valid(U, index));
+    assert(U != NULL && uba_index_valid(U, index)
+            && ((!uba_raw(U) && index < uba_size(U))
+              || (uba_raw(U) && index < uba_limit(U))));
     return U->data[index];
 }
 
